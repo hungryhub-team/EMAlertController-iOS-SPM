@@ -36,6 +36,9 @@ open class EMAlertController: UIViewController {
   internal var heighAnchor: NSLayoutConstraint?
   internal var isLaunch = true
   public var textFields: [UITextField] = []
+  public var paddingBottom: CGFloat = 0
+  public var singleButton: Bool = true
+  var widthSingleButton: CGFloat = 200
   
   internal lazy var backgroundView: UIView = {
     let bgView = UIView()
@@ -80,7 +83,7 @@ open class EMAlertController: UIViewController {
     return label
   }()
   
-  internal var messageTextView: UITextView = {
+  public var messageTextView: UITextView = {
     let textview = UITextView()
     textview.translatesAutoresizingMaskIntoConstraints = false
     textview.font = UIFont.systemFont(ofSize: 14)
@@ -228,7 +231,7 @@ open class EMAlertController: UIViewController {
   }
   
   /// Creates a EMAlertController object with the specified icon, title and message
-  public init(icon: UIImage?, title: String?, message: String?) {
+  public init(icon: UIImage?, title: String?, message: String?, paddingBottom: CGFloat = 0, singleButton: Bool = true) {
     super.init(nibName: nil, bundle: nil)
     
     guard (icon != nil || title != nil || message != nil) else {
@@ -243,17 +246,20 @@ open class EMAlertController: UIViewController {
     messageText = message
     messageTextView.isSelectable = isMessageSelectable 
     
+    self.paddingBottom = paddingBottom
+    self.singleButton = singleButton
+
     setUp()
   }
   
   /// Creates a EMAlertController object with the specified title and message
-  public convenience init (title: String?, message: String?) {
-    self.init(icon: nil, title: title, message: message)
+  public convenience init (title: String?, message: String?, paddingBottom: CGFloat = 0, singleButton: Bool = true) {
+    self.init(icon: nil, title: title, message: message, paddingBottom: paddingBottom, singleButton: singleButton)
   }
   
   open override func viewWillAppear(_ animated: Bool) {
-    NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: UIResponder.keyboardWillShowNotification, object: nil)
-    NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: UIResponder.keyboardWillHideNotification, object: nil)
+      NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow), name: NSNotification.Name.UIResponder.keyboardWillShowNotification, object: nil)
+      NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide), name: NSNotification.Name.UIKeyboardWillHide, object: nil)
   }
   
   override open func viewDidLayoutSubviews() {
@@ -332,7 +338,11 @@ extension EMAlertController {
     alertView.centerXAnchor.constraint(equalTo: backgroundView.centerXAnchor).isActive = true
     alertViewWidth = alertView.widthAnchor.constraint(equalToConstant: Dimension.width(from: view.bounds.size))
     alertViewWidth?.isActive = true
-    alertViewHeight = alertView.heightAnchor.constraint(lessThanOrEqualToConstant: view.bounds.height - 80)
+    if paddingBottom == 0 {
+        alertViewHeight = alertView.heightAnchor.constraint(lessThanOrEqualToConstant: view.bounds.height - 80)
+    } else {
+        alertViewHeight = alertView.heightAnchor.constraint(lessThanOrEqualToConstant: view.bounds.height - 64)
+    }
     alertViewHeight?.isActive = true
     
     // imageView Constraints
@@ -356,11 +366,34 @@ extension EMAlertController {
     
     // actionStackView Constraints    
     buttonStackView.topAnchor.constraint(equalTo: messageTextView.bottomAnchor, constant: 8).isActive = true
-    buttonStackView.leadingAnchor.constraint(equalTo: alertView.leadingAnchor, constant: 0).isActive = true
-    buttonStackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor, constant: 0).isActive = true
-    buttonStackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor, constant: 0).isActive = true
-    buttonStackViewHeightConstraint = buttonStackView.heightAnchor.constraint(equalToConstant: (Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count)))
-    buttonStackViewHeightConstraint!.isActive = true
+    if paddingBottom == 0 {
+       buttonStackView.leadingAnchor.constraint(equalTo: alertView.leadingAnchor, constant: 0).isActive = true
+       buttonStackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor, constant: 0).isActive = true
+       buttonStackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor, constant: paddingBottom).isActive = true
+       buttonStackViewHeightConstraint = buttonStackView.heightAnchor.constraint(equalToConstant: (Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count)))
+       buttonStackViewHeightConstraint!.isActive = true
+   } else {
+       if singleButton {
+           buttonStackView.heightAnchor.constraint(equalToConstant: 42).isActive = true
+           buttonStackView.leadingAnchor.constraint(equalTo: alertView.leadingAnchor, constant: 48).isActive = true
+           buttonStackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor, constant: 48).isActive = true
+           buttonStackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor, constant: -16).isActive = true
+           buttonStackView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+           buttonStackViewHeightConstraint = buttonStackView.heightAnchor.constraint(equalToConstant: (Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count) + paddingBottom))
+           buttonStackViewHeightConstraint!.isActive = true
+
+       } else {
+           buttonStackView.spacing = 16
+           buttonStackView.heightAnchor.constraint(equalToConstant: 42).isActive = true
+           buttonStackView.leadingAnchor.constraint(equalTo: alertView.leadingAnchor, constant: 16).isActive = true
+           buttonStackView.trailingAnchor.constraint(equalTo: alertView.trailingAnchor, constant: 16).isActive = true
+           buttonStackView.bottomAnchor.constraint(equalTo: alertView.bottomAnchor, constant: -16).isActive = true
+           buttonStackView.centerXAnchor.constraint(equalTo: self.view.centerXAnchor).isActive = true
+           buttonStackViewHeightConstraint = buttonStackView.heightAnchor.constraint(equalToConstant: (Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count) + paddingBottom))
+           buttonStackViewHeightConstraint!.isActive = true
+       }
+
+   }
   }
 }
 
