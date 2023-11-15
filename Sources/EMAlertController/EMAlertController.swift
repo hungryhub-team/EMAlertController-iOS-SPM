@@ -420,7 +420,7 @@ extension EMAlertController {
 
 // MARK: - Action Methods
 extension EMAlertController {
-  open func addAction(_ action: EMAlertAction) {
+	public func addAction(_ action: EMAlertAction) {
     buttonStackView.addArrangedSubview(action)
     
     if buttonStackView.arrangedSubviews.count > 2 || textFields.count > 0 {
@@ -447,20 +447,20 @@ extension EMAlertController {
 
 // MARK: - TextField Methods
 extension EMAlertController {
-  internal func addTextField(_ textfield: UITextField) {
-    textFields.append(textfield)
-    buttonStackView.addArrangedSubview(textfield)
-    buttonStackViewHeightConstraint?.constant = Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count)
-    buttonStackView.axis = .vertical
-  }
-  
-  ///
-  open func addTextField(_ configuration: (_ textField: UITextField?) -> ()) {
-    let textField = EMAlertTextField()
-    textField.delegate = self
-    configuration(textField)
-    addTextField(textField)
-  }
+	internal func addTextField(_ textfield: UITextField) {
+		textFields.append(textfield)
+		buttonStackView.addArrangedSubview(textfield)
+		buttonStackViewHeightConstraint?.constant = Dimension.buttonHeight * CGFloat(buttonStackView.arrangedSubviews.count)
+		buttonStackView.axis = .vertical
+	}
+	
+		///
+	public func addTextField(_ configuration: (_ textField: UITextField?) -> ()) {
+		let textField = EMAlertTextField()
+		textField.delegate = self
+		configuration(textField)
+		addTextField(textField)
+	}
 }
 
 // MARK: - Textfield Delegates
